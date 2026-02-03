@@ -136,7 +136,9 @@ export function TableWorkspace({ baseId }: TableWorkspaceProps) {
     if (activeTableId && tables.some((table) => table.id === activeTableId)) {
       return;
     }
-    setActiveTableId(tables[0].id);
+    const firstTable = tables[0];
+    if (!firstTable) return;
+    setActiveTableId(firstTable.id);
   }, [activeTableId, baseDetailsQuery.data?.tables]);
 
   useEffect(() => {
