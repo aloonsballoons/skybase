@@ -130,7 +130,7 @@ export const baseRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			const [updated] = await ctx.db
 				.update(base)
-				.set({ name: input.name, updatedAt: new Date() })
+				.set({ name: input.name })
 				.where(and(eq(base.id, input.baseId), eq(base.ownerId, ctx.session.user.id)))
 				.returning({ id: base.id, name: base.name });
 

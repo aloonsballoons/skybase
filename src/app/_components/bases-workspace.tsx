@@ -148,7 +148,10 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
   const router = useRouter();
   const utils = api.useUtils();
 
-  const baseListQuery = api.base.list.useQuery();
+  const baseListQuery = api.base.list.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+    refetchOnMount: false,
+  });
   const [menuBaseId, setMenuBaseId] = useState<string | null>(null);
   const [renamingBaseId, setRenamingBaseId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
@@ -156,6 +159,7 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
 
   const createBase = api.base.create.useMutation({
     onSuccess: (data) => {
+      utils.base.list.invalidate();
       if (data?.base?.id) {
         router.push(`/bases/${data.base.id}`);
       }
@@ -169,7 +173,21 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
   });
 
   const deleteBase = api.base.delete.useMutation({
-    onSuccess: async () => {
+    onMutate: async ({ baseId }) => {
+      await utils.base.list.cancel();
+      const previous = utils.base.list.getData();
+      utils.base.list.setData(undefined, (old) => {
+        if (!old) return old;
+        return old.filter((item) => item.id !== baseId);
+      });
+      return { previous };
+    },
+    onError: async (_error, _variables, context) => {
+      if (context?.previous) {
+        utils.base.list.setData(undefined, context.previous);
+      }
+    },
+    onSettled: async () => {
       await utils.base.list.invalidate();
     },
   });
@@ -444,8 +462,7 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
               disabled={createBase.isPending}
               className="airtable-shadow mt-[18px] flex h-[32px] w-full cursor-pointer items-center justify-center gap-2 rounded-[6px] bg-[#176ee1] text-[13px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-70"
             >
-              <img alt="" className="h-[14px] w-[14px] shrink-0" src={imgGroup4} />
-              Create
+              {createBase.isPending ? "Creating..." : "Create"}
             </button>
           </div>
         </aside>
@@ -467,8 +484,7 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
               disabled={createBase.isPending}
               className="airtable-shadow flex h-[32px] w-full cursor-pointer items-center justify-center gap-2 rounded-[6px] bg-[#176ee1] text-[13px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-70"
             >
-              <img alt="" className="h-[14px] w-[14px] shrink-0" src={imgGroup4} />
-              Create
+              {createBase.isPending ? "Creating..." : "Create"}
             </button>
           </div>
 

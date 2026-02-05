@@ -52,6 +52,9 @@ export function TableWorkspace({ baseId }: TableWorkspaceProps) {
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
 
   const baseDetailsQuery = api.base.get.useQuery({ baseId });
+  useEffect(() => {
+    utils.base.list.prefetch();
+  }, [utils.base.list]);
   const tableMetaQuery = api.base.getTableMeta.useQuery(
     { tableId: activeTableId ?? "" },
     { enabled: Boolean(activeTableId) }
