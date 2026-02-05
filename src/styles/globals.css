@@ -10,3 +10,106 @@ body {
   background: #ffffff;
   color: #1d1d1f;
 }
+
+:root {
+  --airtable-border-color: #dadada;
+  --airtable-button-shadow: 0 0 6.5px rgba(0, 0, 0, 0.0578);
+  --airtable-selection-shadow: 0 1px 6.5px rgba(199, 200, 201, 0.5);
+}
+
+.airtable-border {
+  border-color: var(--airtable-border-color);
+  border-style: solid;
+}
+
+.airtable-shadow {
+  box-shadow: var(--airtable-button-shadow);
+}
+
+.airtable-outline {
+  border: 1px solid var(--airtable-border-color);
+  box-shadow: var(--airtable-button-shadow);
+}
+
+.airtable-selection-shadow {
+  box-shadow: var(--airtable-selection-shadow);
+}
+
+.airtable-selection-hover {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.airtable-selection-hover:hover {
+  border-color: #c7c8c9;
+  box-shadow: var(--airtable-selection-shadow);
+}
+
+.airtable-open-data-frame {
+  position: absolute;
+  left: 79px;
+  top: 41px;
+  width: 52px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.airtable-open-data-icon {
+  width: 39px;
+  height: 30px;
+  transform-origin: bottom right;
+}
+
+.airtable-open-data-text {
+  position: absolute;
+  left: 114px;
+  top: 50.5px;
+  font-size: 11px;
+  font-weight: 400;
+  color: #616670;
+}
+
+.airtable-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(275px, calc(100% - 24px));
+  height: 38px;
+  padding: 0 12px 0 13px;
+  border-radius: 3px;
+  color: #1d1f24;
+  isolation: isolate;
+}
+
+.airtable-nav-item-active {
+  background: #f3f4f8;
+}
+
+.airtable-nav-item-hover:hover {
+  background: #f3f4f8;
+}
+
+.airtable-nav-icon-img {
+  mix-blend-mode: multiply;
+}
+
+.airtable-nav-icon-slot {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.airtable-circle {
+  height: 30px;
+  width: 30px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid var(--airtable-border-color);
+  box-shadow: var(--airtable-button-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

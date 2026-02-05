@@ -23,8 +23,28 @@ export const baseRouter = createTRPCRouter({
 			orderBy: (base, { desc }) => [desc(base.createdAt)],
 		});
 
-		return bases.map((item) => ({ id: item.id, name: item.name }));
+		return bases.map((item) => ({
+			id: item.id,
+			name: item.name,
+			updatedAt: item.updatedAt,
+		}));
 	}),
+
+	touch: protectedProcedure
+		.input(z.object({ baseId: z.string().uuid() }))
+		.mutation(async ({ ctx, input }) => {
+			const [updated] = await ctx.db
+				.update(base)
+				.set({ updatedAt: new Date() })
+				.where(and(eq(base.id, input.baseId), eq(base.ownerId, ctx.session.user.id)))
+				.returning({ id: base.id, updatedAt: base.updatedAt });
+
+			if (!updated) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			return updated;
+		}),
 
 	get: protectedProcedure
 		.input(z.object({ baseId: z.string().uuid() }))
@@ -103,6 +123,37 @@ export const baseRouter = createTRPCRouter({
 				base: newBase,
 				table: newTable,
 			};
+		}),
+
+	rename: protectedProcedure
+		.input(z.object({ baseId: z.string().uuid(), name: baseNameSchema }))
+		.mutation(async ({ ctx, input }) => {
+			const [updated] = await ctx.db
+				.update(base)
+				.set({ name: input.name, updatedAt: new Date() })
+				.where(and(eq(base.id, input.baseId), eq(base.ownerId, ctx.session.user.id)))
+				.returning({ id: base.id, name: base.name });
+
+			if (!updated) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			return updated;
+		}),
+
+	delete: protectedProcedure
+		.input(z.object({ baseId: z.string().uuid() }))
+		.mutation(async ({ ctx, input }) => {
+			const [deleted] = await ctx.db
+				.delete(base)
+				.where(and(eq(base.id, input.baseId), eq(base.ownerId, ctx.session.user.id)))
+				.returning({ id: base.id });
+
+			if (!deleted) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			return deleted;
 		}),
 
 	addTable: protectedProcedure

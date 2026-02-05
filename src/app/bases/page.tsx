@@ -14,5 +14,7 @@ export default async function BasesPage() {
     redirect("/");
   }
 
-  return <BasesWorkspace />;
+  const userName = session.user.name ?? session.user.email ?? "";
+
+  return <BasesWorkspace userName={userName} />;
 }
