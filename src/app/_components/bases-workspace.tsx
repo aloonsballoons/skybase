@@ -462,6 +462,9 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
               disabled={createBase.isPending}
               className="airtable-shadow mt-[18px] flex h-[32px] w-full cursor-pointer items-center justify-center gap-2 rounded-[6px] bg-[#176ee1] text-[13px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-70"
             >
+              {!createBase.isPending && (
+                <img alt="" className="h-[14px] w-[14px] shrink-0" src={imgGroup4} />
+              )}
               {createBase.isPending ? "Creating..." : "Create"}
             </button>
           </div>
@@ -484,6 +487,9 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
               disabled={createBase.isPending}
               className="airtable-shadow flex h-[32px] w-full cursor-pointer items-center justify-center gap-2 rounded-[6px] bg-[#176ee1] text-[13px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-70"
             >
+              {!createBase.isPending && (
+                <img alt="" className="h-[14px] w-[14px] shrink-0" src={imgGroup4} />
+              )}
               {createBase.isPending ? "Creating..." : "Create"}
             </button>
           </div>
