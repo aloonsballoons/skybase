@@ -101,15 +101,16 @@ export const baseRouter = createTRPCRouter({
 				throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 			}
 
-			const [nameColumn, notesColumn] = await ctx.db
+			const defaultColumns = await ctx.db
 				.insert(tableColumn)
 				.values([
 					{ id: createId(), tableId: newTable.id, name: "Name" },
 					{ id: createId(), tableId: newTable.id, name: "Notes" },
+					{ id: createId(), tableId: newTable.id, name: "Assignee" },
+					{ id: createId(), tableId: newTable.id, name: "Status" },
+					{ id: createId(), tableId: newTable.id, name: "Attachments" },
 				])
 				.returning({ id: tableColumn.id, name: tableColumn.name });
-
-			const defaultColumns = [nameColumn, notesColumn].filter(Boolean);
 			if (defaultColumns.length > 0) {
 				const rows = Array.from({ length: 3 }, () => ({
 					id: createId(),
@@ -199,7 +200,17 @@ export const baseRouter = createTRPCRouter({
 			await ctx.db.insert(tableColumn).values([
 				{ id: createId(), tableId: newTable.id, name: "Name" },
 				{ id: createId(), tableId: newTable.id, name: "Notes" },
+				{ id: createId(), tableId: newTable.id, name: "Assignee" },
+				{ id: createId(), tableId: newTable.id, name: "Status" },
+				{ id: createId(), tableId: newTable.id, name: "Attachments" },
 			]);
+
+			const rows = Array.from({ length: 3 }, () => ({
+				id: createId(),
+				tableId: newTable.id,
+				data: {},
+			}));
+			await ctx.db.insert(tableRow).values(rows);
 
 			return newTable;
 		}),
@@ -409,6 +420,51 @@ export const baseRouter = createTRPCRouter({
 			return { success: true };
 		}),
 
+	updateCell: protectedProcedure
+		.input(
+			z.object({
+				rowId: z.string().uuid(),
+				columnId: z.string().uuid(),
+				value: z.string(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const rowRecord = await ctx.db.query.tableRow.findFirst({
+				where: eq(tableRow.id, input.rowId),
+				with: {
+					table: {
+						with: {
+							base: true,
+						},
+					},
+				},
+			});
+
+			if (!rowRecord || rowRecord.table.base.ownerId !== ctx.session.user.id) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			const columnRecord = await ctx.db.query.tableColumn.findFirst({
+				where: eq(tableColumn.id, input.columnId),
+			});
+
+			if (!columnRecord || columnRecord.tableId !== rowRecord.tableId) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			const nextData = {
+				...(rowRecord.data ?? {}),
+				[input.columnId]: input.value,
+			};
+
+			await ctx.db
+				.update(tableRow)
+				.set({ data: nextData, updatedAt: new Date() })
+				.where(eq(tableRow.id, input.rowId));
+
+			return { success: true };
+		}),
+
 	getTableMeta: protectedProcedure
 		.input(z.object({ tableId: z.string().uuid() }))
 		.query(async ({ ctx, input }) => {
@@ -467,7 +523,7 @@ export const baseRouter = createTRPCRouter({
 			const offset = input.cursor ?? 0;
 			const rows = await ctx.db.query.tableRow.findMany({
 				where: eq(tableRow.tableId, input.tableId),
-				orderBy: (row, { asc }) => [asc(row.createdAt)],
+				orderBy: (row, { asc }) => [asc(row.createdAt), asc(row.id)],
 				limit: input.limit,
 				offset,
 			});
@@ -511,7 +567,7 @@ export const baseRouter = createTRPCRouter({
 				}),
 				ctx.db.query.tableRow.findMany({
 					where: eq(tableRow.tableId, input.tableId),
-					orderBy: (row, { asc }) => [asc(row.createdAt)],
+					orderBy: (row, { asc }) => [asc(row.createdAt), asc(row.id)],
 					limit: input.limit,
 					offset: input.offset,
 				}),

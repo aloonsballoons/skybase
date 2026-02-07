@@ -21,5 +21,7 @@ export default async function BasePage({ params }: BasePageProps) {
     redirect("/");
   }
 
-  return <TableWorkspace baseId={baseId} />;
+  const userName = session.user.name ?? session.user.email ?? "";
+
+  return <TableWorkspace baseId={baseId} userName={userName} />;
 }

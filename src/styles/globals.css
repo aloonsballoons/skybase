@@ -15,6 +15,7 @@ body {
   --airtable-border-color: #dadada;
   --airtable-button-shadow: 0 0 6.5px rgba(0, 0, 0, 0.0578);
   --airtable-selection-shadow: 0 1px 6.5px rgba(199, 200, 201, 0.5);
+  --airtable-hover-bg: #f8f8f8;
 }
 
 .airtable-border {
@@ -42,6 +43,10 @@ body {
 .airtable-selection-hover:hover {
   border-color: #c7c8c9;
   box-shadow: var(--airtable-selection-shadow);
+}
+
+.airtable-hover-bg {
+  background: var(--airtable-hover-bg);
 }
 
 .airtable-open-data-frame {
@@ -112,4 +117,72 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.airtable-base-initials {
+  height: 56px;
+  width: 56px;
+  border-radius: 12px;
+  background: #8c4078;
+  border: 1px solid #743663;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 400;
+}
+
+.airtable-base-initials-sm {
+  height: 32px;
+  width: 32px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.airtable-nav-chevron {
+  height: 9px;
+  width: 6px;
+  display: inline-block;
+  flex-shrink: 0;
+  background-color: currentColor;
+  mask-image: url("../assets/chevron.svg");
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: url("../assets/chevron.svg");
+  -webkit-mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
+.airtable-plus-icon {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+}
+
+.airtable-plus-icon::before,
+.airtable-plus-icon::after {
+  content: "";
+  position: absolute;
+  background: currentColor;
+  border-radius: 1px;
+}
+
+.airtable-plus-icon::before {
+  width: 14px;
+  height: 1px;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.airtable-plus-icon::after {
+  width: 1px;
+  height: 14px;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
 }

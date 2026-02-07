@@ -5,9 +5,13 @@ import { Inter } from "next/font/google";
 import { useRouter } from "next/navigation";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 
+import bellIcon from "~/assets/bell.svg";
 import dataIcon from "~/assets/data.svg";
 import deleteIcon from "~/assets/delete.svg";
+import helpIcon from "~/assets/help.svg";
+import menuIcon from "~/assets/menu.svg";
 import renameIcon from "~/assets/rename.svg";
+import searchIcon from "~/assets/search.svg";
 import { authClient } from "~/server/better-auth/client";
 import { api } from "~/trpc/react";
 
@@ -38,46 +42,30 @@ const imgVector5 =
   "https://www.figma.com/api/mcp/asset/9db0d719-8e6f-4641-8441-9f017f129307";
 const imgVector6 =
   "https://www.figma.com/api/mcp/asset/33101b65-6984-4ba3-9045-5a87b9bd47a4";
-const imgVector7 =
-  "https://www.figma.com/api/mcp/asset/de9a51f2-0303-419f-a43c-580588a25f15";
 const imgVector8 =
   "https://www.figma.com/api/mcp/asset/d3a95da0-7830-40bd-bd17-97a0906e4198";
-const imgRectangle8 =
-  "https://www.figma.com/api/mcp/asset/80709dab-4bcb-4bd7-bc28-cb8b757607b2";
 const imgVector9 =
   "https://www.figma.com/api/mcp/asset/3ebb69d2-7622-43f6-8716-6959699558d9";
 const imgRectangle9 =
   "https://www.figma.com/api/mcp/asset/e0aac126-8fcf-4009-aeb9-6e20541c2d79";
-const imgRectangle11 =
-  "https://www.figma.com/api/mcp/asset/da315edd-e0e6-4bd2-a7ee-c5a1265dd397";
 const imgRectangle =
   "https://www.figma.com/api/mcp/asset/919adab7-5160-421f-b574-27d099dee419";
 const imgRectangle2 =
   "https://www.figma.com/api/mcp/asset/3937d5f7-3c80-4545-9192-f25d08a7f0ae";
 const imgRectangle4 =
   "https://www.figma.com/api/mcp/asset/2fcde3b2-8e5b-4195-9897-d2859aef3a9e";
-const imgGroup4 =
-  "https://www.figma.com/api/mcp/asset/9c1d5d65-0f98-4777-9615-314c883c7eb8";
 const imgLine4 =
   "https://www.figma.com/api/mcp/asset/5ed0759e-1eab-4cf0-92d0-d2a651a1b57d";
-const imgGroup2 =
-  "https://www.figma.com/api/mcp/asset/e0c2b664-2e7c-4ec7-9149-cf6221621f8f";
 const imgGroup3 =
   "https://www.figma.com/api/mcp/asset/3a734266-7673-42e3-9eb0-3ea23910093b";
 const imgGroup7 =
   "https://www.figma.com/api/mcp/asset/c95965ca-ddcf-4d54-8482-f5186661e5f0";
 const imgLineButton =
   "https://www.figma.com/api/mcp/asset/8a28c93f-11a9-4a97-aaea-833ae973fd27";
-const imgRectangle7 =
-  "https://www.figma.com/api/mcp/asset/5233f681-5b05-4dbd-9a7b-78b4520b95ac";
-const imgRectangle10 =
-  "https://www.figma.com/api/mcp/asset/adde3413-bb56-4493-930a-c7e507230e5a";
 const imgEllipse2 =
   "https://www.figma.com/api/mcp/asset/220c0b55-a141-4008-8b9e-393c5dcc820b";
 const imgEllipse3 =
   "https://www.figma.com/api/mcp/asset/42309589-dc81-48ef-80de-6483844e93cc";
-const imgLineButton1 =
-  "https://www.figma.com/api/mcp/asset/051c46a2-670b-4831-8b72-d19f655587da";
 
 type BasesWorkspaceProps = {
   userName: string;
@@ -275,7 +263,7 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
             className="flex h-[24px] w-[24px] items-center justify-center"
             aria-label="Open menu"
           >
-            <img alt="" className="h-[10px] w-[15px]" src={imgLineButton1} />
+            <img alt="" className="h-[10px] w-[15px]" src={menuIcon.src} />
           </button>
           <div className="flex items-center gap-2">
             <img
@@ -292,7 +280,7 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
             <img
               alt=""
               className="h-[14.5px] w-[14.5px] shrink-0"
-              src={imgVector7}
+              src={searchIcon.src}
             />
             <span className="flex-1">Search...</span>
             <div className="flex items-center gap-1 text-[#989aa0]">
@@ -312,39 +300,11 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
             className="hidden items-center gap-2 text-[13px] md:flex"
             aria-label="Help"
           >
-            <span
-              className="inline-flex h-[15px] w-[15px] items-center justify-center"
-              style={{
-                maskImage: `url('${imgRectangle7}')`,
-                WebkitMaskImage: `url('${imgRectangle7}')`,
-                maskSize: "15px 14.285px",
-                WebkitMaskSize: "15px 14.285px",
-                maskRepeat: "no-repeat",
-                WebkitMaskRepeat: "no-repeat",
-                maskPosition: "0.126px 0px",
-                WebkitMaskPosition: "0.126px 0px",
-              }}
-            >
-              <img alt="" className="h-[15px] w-[15px]" src={imgRectangle8} />
-            </span>
+            <img alt="" className="h-[15px] w-[15px]" src={helpIcon.src} />
             Help
           </button>
-          <button type="button" className="airtable-circle relative" aria-label="Notifications">
-            <div
-              className="relative h-[16.5px] w-[15.5px]"
-              style={{
-                maskImage: `url('${imgRectangle10}')`,
-                WebkitMaskImage: `url('${imgRectangle10}')`,
-                maskSize: "15.411px 16.453px",
-                WebkitMaskSize: "15.411px 16.453px",
-                maskRepeat: "no-repeat",
-                WebkitMaskRepeat: "no-repeat",
-                maskPosition: "0.003px -0.001px",
-                WebkitMaskPosition: "0.003px -0.001px",
-              }}
-            >
-              <img alt="" className="h-[16.5px] w-[15.5px]" src={imgRectangle11} />
-            </div>
+          <button type="button" className="airtable-circle" aria-label="Notifications">
+            <img alt="" className="h-[16px] w-[16px]" src={bellIcon.src} />
           </button>
           <button
             type="button"
@@ -395,11 +355,7 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
                   </span>
                   Starred
                 </span>
-                <img
-                  alt=""
-                  className="ml-auto h-[9.45px] w-[5.95px] shrink-0 translate-x-[1px]"
-                  src={imgGroup2}
-                />
+                <span className="airtable-nav-chevron ml-auto translate-x-[1px]" />
               </button>
               <button type="button" className="airtable-nav-item airtable-nav-item-hover">
                 <span className="airtable-nav-icon-slot">
@@ -428,11 +384,7 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
                     className="h-[12px] w-[12px] shrink-0 translate-x-[1px]"
                     src={imgGroup3}
                   />
-                  <img
-                    alt=""
-                    className="h-[9.45px] w-[5.95px] shrink-0 translate-x-[1px]"
-                    src={imgGroup2}
-                  />
+                  <span className="airtable-nav-chevron translate-x-[1px]" />
                 </span>
               </button>
             </div>
@@ -463,7 +415,7 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
               className="airtable-shadow mt-[18px] flex h-[32px] w-full cursor-pointer items-center justify-center gap-2 rounded-[6px] bg-[#176ee1] text-[13px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-70"
             >
               {!createBase.isPending && (
-                <img alt="" className="h-[14px] w-[14px] shrink-0" src={imgGroup4} />
+                <span className="airtable-plus-icon text-white" aria-hidden="true" />
               )}
               {createBase.isPending ? "Creating..." : "Create"}
             </button>
@@ -488,7 +440,7 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
               className="airtable-shadow flex h-[32px] w-full cursor-pointer items-center justify-center gap-2 rounded-[6px] bg-[#176ee1] text-[13px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-70"
             >
               {!createBase.isPending && (
-                <img alt="" className="h-[14px] w-[14px] shrink-0" src={imgGroup4} />
+                <span className="airtable-plus-icon text-white" aria-hidden="true" />
               )}
               {createBase.isPending ? "Creating..." : "Create"}
             </button>
@@ -645,10 +597,7 @@ export function BasesWorkspace({ userName }: BasesWorkspaceProps) {
                       tabIndex={0}
                       className="airtable-outline airtable-selection-hover group relative h-[92px] w-full max-w-[345px] cursor-pointer rounded-[6px] bg-white text-left sm:w-[345px]"
                     >
-                      <div
-                        className="absolute left-[18px] top-[18px] flex h-[56px] w-[56px] items-center justify-center rounded-[12px] bg-[#8C4078] text-[22px] font-normal text-white"
-                        style={{ border: "1px solid #743663" }}
-                      >
+                      <div className="airtable-base-initials absolute left-[18px] top-[18px]">
                         {initials}
                       </div>
                       {isRenaming ? (
