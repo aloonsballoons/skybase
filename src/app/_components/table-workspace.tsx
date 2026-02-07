@@ -443,11 +443,25 @@ export function TableWorkspace({ baseId, userName }: TableWorkspaceProps) {
   });
 
   const virtualColumns = columnVirtualizer.getVirtualItems();
-  const virtualPaddingLeft = virtualColumns[0]?.start ?? 0;
-  const virtualPaddingRight = Math.max(
-    0,
-    totalColumnsWidth - (virtualColumns.at(-1)?.end ?? 0)
+  const nameColumnIndex = columnsWithAdd.findIndex(
+    (column) => column.type === "data" && column.name === "Name"
   );
+  const nameColumn = nameColumnIndex >= 0 ? columnsWithAdd[nameColumnIndex] : null;
+  const nameColumnWidth = nameColumn?.width ?? 0;
+  const scrollableVirtualColumns = nameColumn
+    ? virtualColumns.filter((virtualColumn) => virtualColumn.index !== nameColumnIndex)
+    : virtualColumns;
+  const scrollablePaddingLeft = nameColumn
+    ? Math.max(0, (scrollableVirtualColumns[0]?.start ?? nameColumnWidth) - nameColumnWidth)
+    : virtualColumns[0]?.start ?? 0;
+  const totalScrollableWidth = Math.max(0, totalColumnsWidth - nameColumnWidth);
+  const lastScrollableEnd = nameColumn
+    ? Math.max(
+        0,
+        (scrollableVirtualColumns.at(-1)?.end ?? nameColumnWidth) - nameColumnWidth
+      )
+    : virtualColumns.at(-1)?.end ?? 0;
+  const scrollablePaddingRight = Math.max(0, totalScrollableWidth - lastScrollableEnd);
 
   useEffect(() => {
     columnVirtualizer.measure();
@@ -642,10 +656,11 @@ export function TableWorkspace({ baseId, userName }: TableWorkspaceProps) {
     isFirst: boolean
   ) => ({
     borderTop: "none",
-    borderBottom: "0.5px solid #D1D1D1",
-    borderRight: `0.5px solid ${
-      column.type === "data" && column.name === "Name" ? "#D1D1D1" : "#DDE1E3"
-    }`,
+    borderBottom: "0.5px solid #CBCBCB",
+    borderRight:
+      column.type === "data" && column.name === "Name"
+        ? "none"
+        : "0.5px solid #DDE1E3",
     borderLeft: "none",
   });
 
@@ -655,9 +670,10 @@ export function TableWorkspace({ baseId, userName }: TableWorkspaceProps) {
     isLastRow: boolean
   ) => ({
     borderBottom: isLastRow ? "none" : "0.5px solid #DDE1E3",
-    borderRight: `0.5px solid ${
-      column.type === "data" && column.name === "Name" ? "#D1D1D1" : "#DDE1E3"
-    }`,
+    borderRight:
+      column.type === "data" && column.name === "Name"
+        ? "none"
+        : "0.5px solid #DDE1E3",
     borderLeft: "none",
   });
 
@@ -868,30 +884,77 @@ export function TableWorkspace({ baseId, userName }: TableWorkspaceProps) {
 
               {activeTable && (
                 <div className="h-full">
-                  <div
-                    ref={parentRef}
-                    className="h-full w-full overflow-auto"
-                    style={{ backgroundColor: "#F7F8FC" }}
-                  >
+                  <div className="relative h-full w-full">
                     <div
-                      style={{ minWidth: totalColumnsWidth }}
-                      onMouseLeave={() => {
-                        setHoveredRowId(null);
-                        setHoveredHeaderId(null);
-                      }}
+                      ref={parentRef}
+                      className="h-full w-full overflow-auto"
+                      style={{ backgroundColor: "#F7F8FC" }}
                     >
                       <div
-                        className="sticky top-0 z-10 flex text-[13px] font-medium text-[#1d1f24]"
+                        className="relative"
+                        style={{ minWidth: totalColumnsWidth, minHeight: "100%" }}
+                        onMouseLeave={() => {
+                          setHoveredRowId(null);
+                          setHoveredHeaderId(null);
+                        }}
+                      >
+                      <div
+                        className="sticky top-0 z-10 flex text-[13px] font-medium text-[#1d1f24] relative"
                         style={{ width: totalColumnsWidth }}
                       >
-                        {virtualPaddingLeft > 0 && (
-                          <div style={{ width: virtualPaddingLeft }} />
+                        {nameColumn && (
+                          <div
+                            className="relative flex h-[33px] items-center gap-2 px-2"
+                            style={{
+                              ...headerCellBorder(nameColumn, true),
+                              width: nameColumnWidth,
+                              minWidth: nameColumnWidth,
+                              maxWidth: nameColumnWidth,
+                              flex: "0 0 auto",
+                              backgroundColor:
+                                hoveredHeaderId === nameColumn.id
+                                  ? "var(--airtable-hover-bg)"
+                                  : "#ffffff",
+                              position: "sticky",
+                              left: 0,
+                              zIndex: 30,
+                            }}
+                            onMouseEnter={() => setHoveredHeaderId(nameColumn.id)}
+                            onMouseLeave={() => setHoveredHeaderId(null)}
+                            onContextMenu={(event) =>
+                              handleOpenContextMenu(
+                                event,
+                                "column",
+                                nameColumn.id,
+                                canDeleteColumn
+                              )
+                            }
+                          >
+                            {columnIconMap[nameColumn.name] && (
+                              <img
+                                alt=""
+                                className="h-[13px] w-[13px]"
+                                src={columnIconMap[nameColumn.name]}
+                              />
+                            )}
+                            <span>{nameColumn.name}</span>
+                            <div
+                              role="separator"
+                              aria-label="Resize column"
+                              className="absolute right-0 top-0 h-full w-[6px] cursor-col-resize"
+                              onMouseDown={(event) =>
+                                handleStartResize(event, nameColumn.id)
+                              }
+                            />
+                          </div>
                         )}
-                        {virtualColumns.map((virtualColumn) => {
+                        {scrollablePaddingLeft > 0 && (
+                          <div style={{ width: scrollablePaddingLeft }} />
+                        )}
+                        {scrollableVirtualColumns.map((virtualColumn) => {
                           const column = columnsWithAdd[virtualColumn.index];
                           if (!column) return null;
-                          const isFirst = virtualColumn.index === 0;
-                          const cellStyle = headerCellBorder(column, isFirst);
+                          const cellStyle = headerCellBorder(column, false);
                           const backgroundColor =
                             hoveredHeaderId === column.id
                               ? "var(--airtable-hover-bg)"
@@ -962,9 +1025,13 @@ export function TableWorkspace({ baseId, userName }: TableWorkspaceProps) {
                             </div>
                           );
                         })}
-                        {virtualPaddingRight > 0 && (
-                          <div style={{ width: virtualPaddingRight }} />
+                        {scrollablePaddingRight > 0 && (
+                          <div style={{ width: scrollablePaddingRight }} />
                         )}
+                        <div
+                          className="pointer-events-none absolute bottom-0 left-0 right-0 z-40 h-px bg-[#CBCBCB]"
+                          aria-hidden="true"
+                        />
                       </div>
 
                       <div
@@ -991,49 +1058,132 @@ export function TableWorkspace({ baseId, userName }: TableWorkspaceProps) {
                             );
                           }
 
-                          return (
-                            <div
-                              key={row.id}
-                              className="absolute left-0 right-0 flex text-[13px] text-[#1d1f24]"
-                              style={{
-                                transform: `translateY(${virtualRow.start}px)`,
-                                height: `${virtualRow.size}px`,
-                                width: totalColumnsWidth,
-                              }}
-                              onMouseEnter={() => setHoveredRowId(row.id)}
-                              onMouseLeave={() => setHoveredRowId(null)}
-                              onContextMenu={(event) =>
-                                handleOpenContextMenu(
-                                  event,
-                                  "row",
-                                  row.id,
-                                  canDeleteRow
-                                )
-                              }
-                            >
-                              {virtualPaddingLeft > 0 && (
-                                <div style={{ width: virtualPaddingLeft }} />
-                              )}
-                              {virtualColumns.map((virtualColumn) => {
-                                const column = columnsWithAdd[virtualColumn.index];
-                                if (!column) return null;
-                                const isFirst = virtualColumn.index === 0;
-                                const isLastRow = virtualRow.index === rowCount - 1;
-                                const isSelected =
-                                  column.type === "data" &&
-                                  selectedCell?.rowId === row.id &&
-                                  selectedCell?.columnId === column.id;
-                                const isRowHovered = hoveredRowId === row.id;
-                                const cellBackground = isSelected
-                                  ? "#ffffff"
-                                  : isRowHovered
-                                  ? "var(--airtable-hover-bg)"
-                                  : "#ffffff";
-                                const cellStyle = bodyCellBorder(
-                                  column,
-                                  isFirst,
-                                  isLastRow
-                                );
+                        const isLastRow = virtualRow.index === rowCount - 1;
+                        const rowHasSelection = selectedCell?.rowId === row.id;
+
+                        return (
+                          <div
+                            key={row.id}
+                            className="absolute left-0 right-0 flex text-[13px] text-[#1d1f24]"
+                            style={{
+                              transform: `translateY(${virtualRow.start}px)`,
+                              height: `${virtualRow.size}px`,
+                              width: totalColumnsWidth,
+                              zIndex: rowHasSelection ? 5 : 1,
+                            }}
+                            onMouseEnter={() => setHoveredRowId(row.id)}
+                            onMouseLeave={() => setHoveredRowId(null)}
+                            onContextMenu={(event) =>
+                              handleOpenContextMenu(
+                                event,
+                                "row",
+                                row.id,
+                                canDeleteRow
+                              )
+                            }
+                          >
+                            {nameColumn && (
+                              <div
+                                className="relative flex h-[33px] items-center px-2 overflow-visible"
+                                style={{
+                                  ...bodyCellBorder(nameColumn, true, isLastRow),
+                                  width: nameColumnWidth,
+                                  minWidth: nameColumnWidth,
+                                  maxWidth: nameColumnWidth,
+                                  flex: "0 0 auto",
+                                  backgroundColor:
+                                    selectedCell?.rowId === row.id &&
+                                    selectedCell?.columnId === nameColumn.id
+                                      ? "#ffffff"
+                                      : hoveredRowId === row.id
+                                      ? "var(--airtable-hover-bg)"
+                                      : selectedCell?.rowId === row.id
+                                      ? "var(--airtable-hover-bg)"
+                                      : "#ffffff",
+                                  position: "sticky",
+                                  left: 0,
+                                  zIndex: 25,
+                                }}
+                              >
+                                <input
+                                  value={
+                                    cellEdits[row.id]?.[nameColumn.id] ??
+                                    row[nameColumn.id] ??
+                                    ""
+                                  }
+                                  onChange={(event) =>
+                                    handleCellChange(
+                                      row.id,
+                                      nameColumn.id,
+                                      event.target.value
+                                    )
+                                  }
+                                  onBlur={() =>
+                                    handleCellCommit(
+                                      row.id,
+                                      nameColumn.id,
+                                      cellEdits[row.id]?.[nameColumn.id] ??
+                                        (row[nameColumn.id] ?? ""),
+                                      row[nameColumn.id] ?? ""
+                                    )
+                                  }
+                                  onFocus={() =>
+                                    setSelectedCell({
+                                      rowId: row.id,
+                                      columnId: nameColumn.id,
+                                    })
+                                  }
+                                  onClick={() =>
+                                    setSelectedCell({
+                                      rowId: row.id,
+                                      columnId: nameColumn.id,
+                                    })
+                                  }
+                                  onKeyDown={(event) => {
+                                    if (event.key === "Enter") {
+                                      event.currentTarget.blur();
+                                      return;
+                                    }
+                                    handleCellKeyDown(event, row.id, nameColumn.id);
+                                  }}
+                                  ref={(node) => {
+                                    const key = `${row.id}-${nameColumn.id}`;
+                                    if (node) {
+                                      cellRefs.current.set(key, node);
+                                    } else {
+                                      cellRefs.current.delete(key);
+                                    }
+                                  }}
+                                  className="h-full w-full bg-transparent text-[13px] text-[#1d1f24] outline-none"
+                                  aria-label={`${nameColumn.name} cell`}
+                                />
+                                {selectedCell?.rowId === row.id &&
+                                  selectedCell?.columnId === nameColumn.id && (
+                                    <>
+                                      <div className="pointer-events-none absolute -inset-[1px] z-10 rounded-[2px] border-2 border-[#156FE2]" />
+                                      <div className="pointer-events-none absolute bottom-0 right-0 z-20 h-[8px] w-[8px] translate-x-1/2 translate-y-1/2 rounded-[1px] border border-[#156FE2] bg-white" />
+                                    </>
+                                  )}
+                              </div>
+                            )}
+                            {scrollablePaddingLeft > 0 && (
+                              <div style={{ width: scrollablePaddingLeft }} />
+                            )}
+                            {scrollableVirtualColumns.map((virtualColumn) => {
+                              const column = columnsWithAdd[virtualColumn.index];
+                              if (!column) return null;
+                              const isSelected =
+                                column.type === "data" &&
+                                selectedCell?.rowId === row.id &&
+                                selectedCell?.columnId === column.id;
+                              const isRowHovered = hoveredRowId === row.id;
+                              const rowHasSelection = selectedCell?.rowId === row.id;
+                              const cellBackground = isSelected
+                                ? "#ffffff"
+                                : isRowHovered || rowHasSelection
+                                ? "var(--airtable-hover-bg)"
+                                : "#ffffff";
+                              const cellStyle = bodyCellBorder(column, false, isLastRow);
 
                                 if (column.type === "add") {
                                   return (
@@ -1053,14 +1203,14 @@ export function TableWorkspace({ baseId, userName }: TableWorkspaceProps) {
                                   cellEdits[row.id]?.[column.id] ?? originalValue;
 
                                 return (
-                                  <div
-                                    key={`${row.id}-${column.id}`}
-                                    className="relative flex h-[33px] items-center px-2"
-                                    style={{
-                                      ...cellStyle,
-                                      width: virtualColumn.size,
-                                      flex: "0 0 auto",
-                                      backgroundColor: cellBackground,
+                                <div
+                                  key={`${row.id}-${column.id}`}
+                                  className="relative flex h-[33px] items-center px-2 overflow-visible"
+                                  style={{
+                                    ...cellStyle,
+                                    width: virtualColumn.size,
+                                    flex: "0 0 auto",
+                                    backgroundColor: cellBackground,
                                     }}
                                   >
                                     <input
@@ -1119,12 +1269,12 @@ export function TableWorkspace({ baseId, userName }: TableWorkspaceProps) {
                                   </div>
                                 );
                               })}
-                              {virtualPaddingRight > 0 && (
-                                <div style={{ width: virtualPaddingRight }} />
-                              )}
-                            </div>
-                          );
-                        })}
+                            {scrollablePaddingRight > 0 && (
+                              <div style={{ width: scrollablePaddingRight }} />
+                            )}
+                          </div>
+                        );
+                      })}
                       </div>
 
                       <div className="flex" style={{ width: totalColumnsWidth }}>
@@ -1152,6 +1302,14 @@ export function TableWorkspace({ baseId, userName }: TableWorkspaceProps) {
                         <div style={{ width: addColumnWidth }} aria-hidden="true" />
                       </div>
                     </div>
+                    </div>
+                    {nameColumn && nameColumnWidth > 0 && (
+                      <div
+                        className="pointer-events-none absolute top-0 bottom-0 z-40 w-px bg-[#CBCBCB]"
+                        style={{ left: `${nameColumnWidth}px` }}
+                        aria-hidden="true"
+                      />
+                    )}
                   </div>
 
                   {!activeColumns.length && (
